@@ -12,12 +12,9 @@
         script: npm install
       - name: Install Capacitor CLI
         script: npm install -g @capacitor/cli
-      - name: Add iOS platform
-        script: npx cap add ios
-      - name: Sync Capacitor
-        script: npx cap sync ios
-      - name: Create minimal web content
+      - name: Create web assets
         script: |
+          # Create the web directory that Capacitor expects
           mkdir -p dist
           cat > dist/index.html << 'EOF'
           <!DOCTYPE html>
@@ -64,7 +61,15 @@
           </body>
           </html>
           EOF
-          npx cap sync ios
+          
+          # Verify the file was created
+          echo "✅ Web assets created:"
+          ls -la dist/
+          cat dist/index.html | head -10
+      - name: Add iOS platform
+        script: npx cap add ios
+      - name: Sync Capacitor
+        script: npx cap sync ios
       - name: Create self-signed certificate and provision
         script: |
           # Create a development certificate and provisioning profile
