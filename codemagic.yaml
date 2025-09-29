@@ -28,7 +28,7 @@
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
             -configuration Debug \
-            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -destination 'platform=iOS Simulator,OS=17.5,name=iPhone 15' \
             -derivedDataPath $CM_BUILD_DIR/DerivedData \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
