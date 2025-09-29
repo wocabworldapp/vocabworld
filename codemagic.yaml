@@ -131,7 +131,11 @@ PROVISION
             if [ -f "VocabWorld.ipa" ] && [ -s "VocabWorld.ipa" ]; then
               echo "🎯 VocabWorld.ipa is ready for download!"
               echo "📋 IPA contents:"
-              unzip -l VocabWorld.ipa | head -10
+              unzip -l VocabWorld.ipa | head -20
+              echo "📱 Checking for embedded.mobileprovision:"
+              unzip -l VocabWorld.ipa | grep mobileprovision || echo "❌ No mobileprovision found in IPA"
+              echo "📂 App bundle contents:"
+              unzip -l VocabWorld.ipa | grep "Payload/App.app/"
             else
               echo "❌ IPA file is empty or missing"
             fi
