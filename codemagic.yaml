@@ -1,6 +1,6 @@
 ﻿workflows:
   ios-workflow:
-    name: Capacitor iOS - Status Bar Fix
+    name: VocabWorld iOS - Self Signed for Diawi
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -65,83 +65,97 @@
           </html>
           EOF
           npx cap sync ios
-      - name: Configure iOS for development signing
+      - name: Create self-signed certificate and provision
         script: |
-          # Use development signing with automatic provisioning
-          cd ios/App
+          # Create a development certificate and provisioning profile
           
-          # Update project settings for development
-          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = .*;/PROVISIONING_PROFILE_SPECIFIER = "";/g' App.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' App.xcodeproj/project.pbxproj
+          # Generate a self-signed certificate
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
           
-          # Add automatic signing capability
-          echo "Setting up automatic development signing..."
-      - name: Build iOS Development
-        script: |
-          cd ios/App
+          # Create certificate
+          openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=VocabWorld Development"
           
-          # Build for development with automatic signing
-          xcodebuild -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Debug \
-            -sdk iphoneos \
-            -destination generic/platform=iOS \
-            -allowProvisioningUpdates \
-            -allowProvisioningDeviceRegistration \
-            CODE_SIGN_IDENTITY="iPhone Developer" \
-            DEVELOPMENT_TEAM="" \
-            build \
-            | tee $CM_BUILD_DIR/build.log
-            
-          # Create development archive
-          xcodebuild -workspace App.xcworkspace \
-            -scheme App \
-            -configuration Debug \
-            -sdk iphoneos \
-            -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
-            -allowProvisioningUpdates \
-            CODE_SIGN_IDENTITY="iPhone Developer" \
-            DEVELOPMENT_TEAM="" \
-            archive \
-            | tee $CM_BUILD_DIR/archive.log
-      - name: Export development IPA
-        script: |
-          # Create export options for development
-          cat > $CM_BUILD_DIR/ExportOptions.plist << 'EOF'
+          # Convert to p12
+          openssl pkcs12 -export -out cert.p12 -inkey key.pem -in cert.pem -passout pass:
+          
+          # Import to keychain
+          security import cert.p12 -k build.keychain -P "" -T /usr/bin/codesign
+          
+          # Create a basic provisioning profile
+          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
+          cat > profile.mobileprovision << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>method</key>
-              <string>development</string>
-              <key>signingStyle</key>
-              <string>automatic</string>
-              <key>stripSwiftSymbols</key>
-              <true/>
-              <key>thinning</key>
-              <string>&lt;none&gt;</string>
+              <key>AppIDName</key>
+              <string>VocabWorld</string>
+              <key>ApplicationIdentifierPrefix</key>
+              <array>
+                  <string>TEAMID</string>
+              </array>
+              <key>Name</key>
+              <string>VocabWorld Development</string>
+              <key>TeamIdentifier</key>
+              <array>
+                  <string>TEAMID</string>
+              </array>
+              <key>UUID</key>
+              <string>12345678-1234-1234-1234-123456789012</string>
           </dict>
           </plist>
           EOF
           
-          # Export IPA
-          xcodebuild -exportArchive \
+          cp profile.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
+      - name: Build and sign iOS app
+        script: |
+          cd ios/App
+          
+          # Build the app
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination generic/platform=iOS \
             -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
-            -exportPath $CM_BUILD_DIR/export \
-            -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist \
-            -allowProvisioningUpdates \
-            | tee $CM_BUILD_DIR/export.log
-            
-          # Check what was created
-          echo "=== Build Results ==="
-          ls -la $CM_BUILD_DIR/export/ || echo "No export folder"
-          ls -la $CM_BUILD_DIR/VocabWorld.xcarchive/ || echo "No archive"
-          echo "=== End Results ==="
+            CODE_SIGN_IDENTITY="VocabWorld Development" \
+            PROVISIONING_PROFILE="12345678-1234-1234-1234-123456789012" \
+            archive || echo "Archive failed, creating unsigned version..."
+          
+          # If signing fails, create unsigned app
+          if [ ! -d "$CM_BUILD_DIR/VocabWorld.xcarchive" ]; then
+            echo "Creating unsigned build for testing..."
+            xcodebuild -workspace App.xcworkspace \
+              -scheme App \
+              -configuration Release \
+              -destination generic/platform=iOS \
+              -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
+              CODE_SIGNING_ALLOWED=NO \
+              archive
+          fi
+          
+          # Create IPA manually
+          mkdir -p $CM_BUILD_DIR/Payload
+          if [ -d "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" ]; then
+            cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
+            cd $CM_BUILD_DIR
+            zip -r VocabWorld.ipa Payload/
+            echo "IPA created: VocabWorld.ipa"
+            ls -la VocabWorld.ipa
+          else
+            echo "Failed to create app bundle"
+            find $CM_BUILD_DIR -name "*.app" -type d
+          fi
     artifacts:
-      - $CM_BUILD_DIR/export/*.ipa
-      - $CM_BUILD_DIR/VocabWorld.xcarchive
-      - $CM_BUILD_DIR/*.log
+      - VocabWorld.ipa
+      - ios/App/build/Release-iphoneos/*.app
+    publishing:
+      email:
+        recipients:
+          - wocabworldapp@example.com
+        notify:
+          success: true
     publishing:
       email:
         recipients:
