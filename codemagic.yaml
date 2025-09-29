@@ -124,6 +124,8 @@ workflows:
               <string>VocabWorld Development</string>
               <key>Platform</key>
               <array><string>iOS</string></array>
+              <key>ProvisionsAllDevices</key>
+              <true/>
               <key>TeamIdentifier</key>
               <array><string>DEV123</string></array>
               <key>TeamName</key>
@@ -137,6 +139,37 @@ workflows:
           </dict>
           </plist>
           EOF
+            
+            # Create installation instructions
+            cat > $CM_BUILD_DIR/iPhone_Installation_Guide.txt << 'INSTALL'
+          📱 VocabWorld Installation Guide - iPhone 11
+          
+          🚨 FIXING "Cannot verify integrity" ERROR:
+          
+          After installing from Diawi, if you see the integrity error:
+          
+          1. ⚙️  Go to Settings on your iPhone
+          2. 📋 General > VPN & Device Management  
+          3. 👨‍💻 Look for "DEVELOPER APP" section
+          4. 📱 Find "VocabWorld Development Team"
+          5. ✅ Tap "Trust VocabWorld Development Team"
+          6. ✅ Confirm "Trust" in the popup
+          7. 🚀 Now open VocabWorld - it should work!
+          
+          📱 What to Expect:
+          - Purple status bar background (no more white bar!)
+          - Capacitor status bar overlay working on iPhone 11
+          - Test page showing "Status Bar Overlay Fixed!"
+          
+          📋 Step-by-Step:
+          1. Upload VocabWorld.ipa to diawi.com
+          2. Open the Diawi link on your iPhone 11  
+          3. Tap "Install" when prompted
+          4. Trust the certificate (steps above)
+          5. Launch VocabWorld to test status bar fix
+          
+          ✨ This tests the native Capacitor solution for the white status bar issue!
+          INSTALL
             
             cd $CM_BUILD_DIR
             zip -r VocabWorld.ipa Payload/
@@ -160,4 +193,5 @@ workflows:
           fi
     artifacts:
       - VocabWorld.ipa
+      - iPhone_Installation_Guide.txt
       - ios/App/build/Release-iphoneos/*.app
