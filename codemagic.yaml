@@ -174,6 +174,43 @@ workflows:
             cd $CM_BUILD_DIR
             zip -r VocabWorld.ipa Payload/
             
+            # Create alternative installation guide 
+            cat > Alternative_Installation.txt << 'ALT'
+          📱 ALTERNATIVE INSTALLATION METHODS (No Integrity Checks!)
+          
+          Since Diawi is giving integrity errors, try these methods:
+          
+          🔥 METHOD 1: AltStore (BEST OPTION)
+          1. Install AltStore from altstore.io on your computer
+          2. Install AltStore app on your iPhone 11
+          3. Drag VocabWorld.ipa into AltStore 
+          4. Install directly - bypasses all Apple restrictions!
+          
+          🔧 METHOD 2: Sideloadly  
+          1. Download Sideloadly from sideloadly.io
+          2. Connect iPhone 11 via USB
+          3. Drag VocabWorld.ipa into Sideloadly
+          4. Enter Apple ID (free account works)
+          5. Install directly to device
+          
+          📋 METHOD 3: 3uTools
+          1. Download 3uTools 
+          2. Connect iPhone via USB
+          3. Apps > Install Local Apps
+          4. Select VocabWorld.ipa and install
+          
+          ⚡ Why These Work:
+          - Bypass Apple's integrity verification completely
+          - No certificate trust required
+          - Direct sideloading to device
+          - Perfect for testing status bar fixes
+          
+          🎯 Expected Result:
+          - Purple status bar background (fixes white bar)
+          - Native Capacitor overlay working on iPhone 11
+          - No more Safari PWA limitations!
+          ALT
+            
             echo "✅ IPA created successfully!"
             echo "📁 File size: $(ls -lh VocabWorld.ipa | awk '{print $5}')"
             
@@ -193,5 +230,7 @@ workflows:
           fi
     artifacts:
       - VocabWorld.ipa
+      - manifest.plist
+      - Alternative_Installation.txt
       - iPhone_Installation_Guide.txt
       - ios/App/build/Release-iphoneos/*.app
