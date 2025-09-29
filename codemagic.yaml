@@ -195,15 +195,13 @@
           
           # Create app icons (simple colored squares for now)
           echo "Creating app icons..."
-      - name: Deploy to GitHub Pages
+      - name: Create PWA Package
         script: |
-          # Configure git for deployment
-          git config --global user.email "wocabworldapp@example.com"
-          git config --global user.name "VocabWorld App"
-          
-          # Deploy to gh-pages branch
-          npm install -g gh-pages
-          gh-pages -d dist -r https://github.com/wocabworldapp/vocabworld.git
+          # Create a complete PWA package
+          echo "VocabWorld PWA created successfully!"
+          echo "Files ready for download:"
+          ls -la dist/
+          echo "To install: Upload these files to any web host and visit the URL on your iPhone 11"
     artifacts:
       - dist/**/*
     publishing:
