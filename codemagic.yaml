@@ -22,27 +22,23 @@ workflows:
           ls -la dist/
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Build unsigned iOS app
+      - name: Build signed iOS app (Alternative)
         script: |
           cd ios/App
           
-          echo "🔧 Building unsigned iOS app for development testing..."
+          echo "🔧 Trying alternative build with better certificate embedding..."
           
-          # Build without code signing
+          # Try building with proper entitlements
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination generic/platform=iOS \
             -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
-            CODE_SIGNING_ALLOWED=NO \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGN_IDENTITY="" \
-            PROVISIONING_PROFILE="" \
             archive
           
-          echo "📦 Creating IPA package..."
+          echo "📦 Creating IPA with proper certificate..."
           
-          # Create IPA manually
+          # Create IPA manually with better certificate handling
           if [ -d "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" ]; then
             mkdir -p $CM_BUILD_DIR/Payload
             cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
@@ -102,8 +98,48 @@ workflows:
             
             echo "📁 File size: $(ls -lh VocabWorld.ipa | awk '{print $5}')"
             
-            # Create installation guide
-            cat > iPhone_Installation_Guide.txt << 'GUIDE'
+            # Create alternative installation files for different methods
+            cat > Alternative_Install_Methods.txt << 'ALT_METHODS'
+          📱 ALTERNATIVE INSTALLATION METHODS (If Diawi doesn't work)
+
+          🔥 METHOD 1: AltStore (RECOMMENDED - No certificate issues!)
+          1. Download AltStore from altstore.io
+          2. Install on your computer and iPhone (one-time setup)
+          3. Use AltStore to install VocabWorld.ipa directly
+          4. No certificate trust needed - AltStore handles it!
+
+          📧 METHOD 2: Email Installation
+          1. Email VocabWorld.ipa to yourself
+          2. Open email on iPhone
+          3. Tap the IPA attachment
+          4. Try "Copy to..." or "Open with..." options
+
+          🌐 METHOD 3: Different Upload Service
+          Instead of Diawi, try:
+          - installonair.com
+          - appinst.ru
+          - ipa-install.com
+
+          💻 METHOD 4: Xcode Installation (If you have Mac access)
+          1. Open Xcode on Mac
+          2. Window → Devices and Simulators
+          3. Connect iPhone via USB
+          4. Drag VocabWorld.ipa to your device
+
+          📱 METHOD 5: TestFlight Alternative
+          If you have Apple Developer account:
+          1. Upload to App Store Connect
+          2. Use TestFlight for testing
+          3. No certificate issues at all
+
+          🔧 TROUBLESHOOTING IF NOTHING SHOWS IN SETTINGS:
+          - Restart iPhone after installation attempt
+          - Try installing in airplane mode, then turn wifi back on
+          - Check if app icon appears but just won't open
+          - Look in Settings → General → Profiles (not VPN section)
+
+          ✨ AltStore is your best bet - it bypasses all certificate issues!
+          ALT_METHODS
           📱 VocabWorld Installation Guide - iPhone Testing
 
           🚨 INSTALL ON YOUR IPHONE:
@@ -156,4 +192,5 @@ workflows:
     artifacts:
       - VocabWorld.ipa
       - iPhone_Installation_Guide.txt
+      - Alternative_Install_Methods.txt
       - ios/App/build/Release-iphoneos/*.app
