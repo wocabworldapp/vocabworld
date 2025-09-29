@@ -48,51 +48,50 @@ workflows:
             cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
             
             # Create embedded mobileprovision file (required for IPA installation)
-            cat > embedded.mobileprovision << 'PROVISION'
-<?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<plist version="1.0">
-<dict>
-    <key>AppIDName</key>
-    <string>VocabWorld Development</string>
-    <key>ApplicationIdentifierPrefix</key>
-    <array><string>DEV123</string></array>
-    <key>CreationDate</key>
-    <date>2024-09-29T00:00:00Z</date>
-    <key>DeveloperCertificates</key>
-    <array><data>LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lKQU5Eb1FLM3VOMjYwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4Q3pBSkJnTlYKQkFZVEFsVlRNUXd3Q2dZRFZRUUlEQU5CUFRFUEF3MEVDVGo0Q2dZRFZRUUtEQUJWYm1sMGJGTjBZV1IxQ2xVbVZoYzIxOQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==</data></array>
-    <key>Entitlements</key>
-    <dict>
-        <key>application-identifier</key>
-        <string>DEV123.com.vocabworld.languagelearning</string>
-        <key>com.apple.developer.team-identifier</key>
-        <string>DEV123</string>
-        <key>get-task-allow</key>
-        <true/>
-        <key>keychain-access-groups</key>
-        <array><string>DEV123.*</string></array>
-    </dict>
-    <key>ExpirationDate</key>
-    <date>2025-12-31T23:59:59Z</date>
-    <key>Name</key>
-    <string>VocabWorld Development</string>
-    <key>Platform</key>
-    <array><string>iOS</string></array>
-    <key>ProvisionsAllDevices</key>
-    <true/>
-    <key>TeamIdentifier</key>
-    <array><string>DEV123</string></array>
-    <key>TeamName</key>
-    <string>VocabWorld Team</string>
-    <key>TimeToLive</key>
-    <integer>365</integer>
-    <key>UUID</key>
-    <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>
-    <key>Version</key>
-    <integer>1</integer>
-</dict>
-</plist>
-PROVISION
+            # Using echo to avoid YAML parsing issues with XML content
+            echo '<?xml version="1.0" encoding="UTF-8"?>' > embedded.mobileprovision
+            echo '<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">' >> embedded.mobileprovision
+            echo '<plist version="1.0">' >> embedded.mobileprovision
+            echo '<dict>' >> embedded.mobileprovision
+            echo '    <key>AppIDName</key>' >> embedded.mobileprovision
+            echo '    <string>VocabWorld Development</string>' >> embedded.mobileprovision
+            echo '    <key>ApplicationIdentifierPrefix</key>' >> embedded.mobileprovision
+            echo '    <array><string>DEV123</string></array>' >> embedded.mobileprovision
+            echo '    <key>CreationDate</key>' >> embedded.mobileprovision
+            echo '    <date>2024-09-29T00:00:00Z</date>' >> embedded.mobileprovision
+            echo '    <key>DeveloperCertificates</key>' >> embedded.mobileprovision
+            echo '    <array><data>LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lKQU5Eb1FLM3VOMjYwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4Q3pBSkJnTlYKQkFZVEFsVlRNUXd3Q2dZRFZRUUlEQU5CUFRFUEF3MEVDVGo0Q2dZRFZRUUtEQUJWYm1sMGJGTjBZV1IxQ2xVbVZoYzIxOQotLS0tLUVORCBDRVJUSUZJQ0FURS0tLS0tCg==</data></array>' >> embedded.mobileprovision
+            echo '    <key>Entitlements</key>' >> embedded.mobileprovision
+            echo '    <dict>' >> embedded.mobileprovision
+            echo '        <key>application-identifier</key>' >> embedded.mobileprovision
+            echo '        <string>DEV123.com.vocabworld.languagelearning</string>' >> embedded.mobileprovision
+            echo '        <key>com.apple.developer.team-identifier</key>' >> embedded.mobileprovision
+            echo '        <string>DEV123</string>' >> embedded.mobileprovision
+            echo '        <key>get-task-allow</key>' >> embedded.mobileprovision
+            echo '        <true/>' >> embedded.mobileprovision
+            echo '        <key>keychain-access-groups</key>' >> embedded.mobileprovision
+            echo '        <array><string>DEV123.*</string></array>' >> embedded.mobileprovision
+            echo '    </dict>' >> embedded.mobileprovision
+            echo '    <key>ExpirationDate</key>' >> embedded.mobileprovision
+            echo '    <date>2025-12-31T23:59:59Z</date>' >> embedded.mobileprovision
+            echo '    <key>Name</key>' >> embedded.mobileprovision
+            echo '    <string>VocabWorld Development</string>' >> embedded.mobileprovision
+            echo '    <key>Platform</key>' >> embedded.mobileprovision
+            echo '    <array><string>iOS</string></array>' >> embedded.mobileprovision
+            echo '    <key>ProvisionsAllDevices</key>' >> embedded.mobileprovision
+            echo '    <true/>' >> embedded.mobileprovision
+            echo '    <key>TeamIdentifier</key>' >> embedded.mobileprovision
+            echo '    <array><string>DEV123</string></array>' >> embedded.mobileprovision
+            echo '    <key>TeamName</key>' >> embedded.mobileprovision
+            echo '    <string>VocabWorld Team</string>' >> embedded.mobileprovision
+            echo '    <key>TimeToLive</key>' >> embedded.mobileprovision
+            echo '    <integer>365</integer>' >> embedded.mobileprovision
+            echo '    <key>UUID</key>' >> embedded.mobileprovision
+            echo '    <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>' >> embedded.mobileprovision
+            echo '    <key>Version</key>' >> embedded.mobileprovision
+            echo '    <integer>1</integer>' >> embedded.mobileprovision
+            echo '</dict>' >> embedded.mobileprovision
+            echo '</plist>' >> embedded.mobileprovision
             
             # Copy the mobileprovision into the app bundle
             cp embedded.mobileprovision "$CM_BUILD_DIR/Payload/App.app/embedded.mobileprovision"
