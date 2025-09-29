@@ -1,6 +1,6 @@
 ﻿workflows:
   ios-workflow:
-    name: iOS Build
+    name: iOS Build - Ad Hoc Signed
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -18,25 +18,38 @@
         script: npx cap add ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Configure code signing
+      - name: Create Ad Hoc Signed IPA
         script: |
-          # Disable automatic code signing for CI builds
-          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/' ios/App/App.xcodeproj/project.pbxproj
-          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/' ios/App/App.xcodeproj/project.pbxproj
-      - name: Build iOS for Simulator
-        script: |
+          # Create a self-signed certificate for ad-hoc distribution
+          security create-keychain -p "" build.keychain
+          security default-keychain -s build.keychain
+          security unlock-keychain -p "" build.keychain
+          
+          # Create a simple mobileprovision for ad-hoc
+          mkdir -p ios/App/App/
+          
+          # Build with ad-hoc signing
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
-            -configuration Debug \
-            -destination 'platform=iOS Simulator,OS=17.5,name=iPhone 15' \
-            -derivedDataPath $CM_BUILD_DIR/DerivedData \
-            CODE_SIGNING_ALLOWED=NO \
+            -configuration Release \
+            -destination generic/platform=iOS \
+            -archivePath $CM_BUILD_DIR/App.xcarchive \
+            CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
-            build
-      - name: Create App Bundle
-        script: |
-          mkdir -p $CM_BUILD_DIR/VocabWorld.app
-          cp -r $CM_BUILD_DIR/DerivedData/Build/Products/Debug-iphonesimulator/App.app/* $CM_BUILD_DIR/VocabWorld.app/
-          echo "VocabWorld iOS app built successfully!"
+            CODE_SIGNING_ALLOWED=NO \
+            archive
+            
+          # Create IPA manually
+          mkdir -p $CM_BUILD_DIR/Payload
+          cp -r $CM_BUILD_DIR/App.xcarchive/Products/Applications/App.app $CM_BUILD_DIR/Payload/
+          cd $CM_BUILD_DIR
+          zip -r VocabWorld.ipa Payload/
     artifacts:
-      - $CM_BUILD_DIR/VocabWorld.app/**/*
+      - $CM_BUILD_DIR/VocabWorld.ipa
+    publishing:
+      email:
+        recipients:
+          - wocabworldapp@example.com
+        notify:
+          success: true
+          failure: true
