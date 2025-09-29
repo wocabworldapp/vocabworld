@@ -18,19 +18,25 @@
         script: npx cap add ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Build iOS
+      - name: Configure code signing
+        script: |
+          # Disable automatic code signing for CI builds
+          sed -i '' 's/CODE_SIGN_STYLE = Automatic;/CODE_SIGN_STYLE = Manual;/' ios/App/App.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/' ios/App/App.xcodeproj/project.pbxproj
+      - name: Build iOS for Simulator
         script: |
           xcodebuild -workspace ios/App/App.xcworkspace \
             -scheme App \
-            -configuration Release \
-            -destination generic/platform=iOS \
-            -archivePath $CM_BUILD_DIR/App.xcarchive \
-            archive
-      - name: Export IPA
+            -configuration Debug \
+            -destination 'platform=iOS Simulator,name=iPhone 15' \
+            -derivedDataPath $CM_BUILD_DIR/DerivedData \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            build
+      - name: Create App Bundle
         script: |
-          xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/App.xcarchive \
-            -exportPath $CM_BUILD_DIR/export \
-            -exportOptionsPlist ios/App/exportOptions.plist
+          mkdir -p $CM_BUILD_DIR/VocabWorld.app
+          cp -r $CM_BUILD_DIR/DerivedData/Build/Products/Debug-iphonesimulator/App.app/* $CM_BUILD_DIR/VocabWorld.app/
+          echo "VocabWorld iOS app built successfully!"
     artifacts:
-      - $CM_BUILD_DIR/export/*.ipa
+      - $CM_BUILD_DIR/VocabWorld.app/**/*
