@@ -176,42 +176,121 @@ workflows:
             
             # Create alternative installation guide 
             cat > Alternative_Installation.txt << 'ALT'
-          📱 ALTERNATIVE INSTALLATION METHODS (No Integrity Checks!)
+          📱 WIRELESS INSTALLATION METHODS (No USB Required!)
           
-          Since Diawi is giving integrity errors, try these methods:
+          🔥 METHOD 1: AltStore Wireless (RECOMMENDED)
           
-          🔥 METHOD 1: AltStore (BEST OPTION)
-          1. Install AltStore from altstore.io on your computer
-          2. Install AltStore app on your iPhone 11
-          3. Drag VocabWorld.ipa into AltStore 
-          4. Install directly - bypasses all Apple restrictions!
+          Initial Setup (One Time Only):
+          1. Download AltStore from altstore.io on your computer
+          2. Connect iPhone 11 to computer ONCE via USB for initial setup
+          3. Install AltStore app on your iPhone 11
+          4. Enable "Sync over Wi-Fi" in iTunes/Finder
+          5. Disconnect USB - you're now wireless forever!
           
-          🔧 METHOD 2: Sideloadly  
-          1. Download Sideloadly from sideloadly.io
-          2. Connect iPhone 11 via USB
-          3. Drag VocabWorld.ipa into Sideloadly
-          4. Enter Apple ID (free account works)
-          5. Install directly to device
+          Installing VocabWorld (Wireless):
+          1. Download VocabWorld.ipa to your computer
+          2. Both computer and iPhone on same Wi-Fi network
+          3. Open AltStore app on iPhone 11
+          4. Tap "+" to add app
+          5. Select VocabWorld.ipa from computer wirelessly
+          6. Install - bypasses all integrity checks!
           
-          📋 METHOD 3: 3uTools
-          1. Download 3uTools 
-          2. Connect iPhone via USB
-          3. Apps > Install Local Apps
-          4. Select VocabWorld.ipa and install
+          🌐 METHOD 2: Safari Direct Install (iOS 16+)
+          If your iPhone supports it:
+          1. Upload VocabWorld.ipa to file sharing service (Google Drive, Dropbox)
+          2. Open link in Safari on iPhone 11
+          3. Tap "Install" if prompted
+          4. May work depending on iOS version
           
-          ⚡ Why These Work:
-          - Bypass Apple's integrity verification completely
-          - No certificate trust required
-          - Direct sideloading to device
-          - Perfect for testing status bar fixes
+          📱 METHOD 3: Apple Configurator 2 (Wireless)
+          1. Install Apple Configurator 2 on Mac
+          2. Add iPhone via Wi-Fi pairing
+          3. Drag VocabWorld.ipa into Configurator
+          4. Install wirelessly to device
           
-          🎯 Expected Result:
-          - Purple status bar background (fixes white bar)
-          - Native Capacitor overlay working on iPhone 11
-          - No more Safari PWA limitations!
+          🎯 After Installation (Any Method):
+          - Purple status bar background (fixes white bar issue!)
+          - Native Capacitor status bar overlay working
+          - No more Safari PWA limitations on iPhone 11
+          
+          ⚡ AltStore wireless is your best option - one USB setup, wireless forever!
           ALT
+            # Create enterprise manifest for wireless installation
+            cat > manifest.plist << 'MANIFEST'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>items</key>
+              <array>
+                  <dict>
+                      <key>assets</key>
+                      <array>
+                          <dict>
+                              <key>kind</key>
+                              <string>software-package</string>
+                              <key>url</key>
+                              <string>https://github.com/wocabworldapp/vocabworld/releases/download/v1.0/VocabWorld.ipa</string>
+                          </dict>
+                      </array>
+                      <key>metadata</key>
+                      <dict>
+                          <key>bundle-identifier</key>
+                          <string>com.vocabworld.enterprise</string>
+                          <key>bundle-version</key>
+                          <string>1.0</string>
+                          <key>kind</key>
+                          <string>software</string>
+                          <key>title</key>
+                          <string>VocabWorld - Status Bar Fix</string>
+                          <key>subtitle</key>
+                          <string>Purple Status Bar for iPhone 11</string>
+                      </dict>
+                  </dict>
+              </array>
+          </dict>
+          </plist>
+          MANIFEST
             
-            echo "✅ IPA created successfully!"
+            # Create wireless installation instructions
+            cat > Wireless_Only_Install.txt << 'WIRELESS'
+          📱 100% WIRELESS INSTALLATION - NO USB NEEDED!
+          
+          🌐 OPTION 1: Enterprise Manifest (Like TestFlight)
+          1. Upload VocabWorld.ipa and manifest.plist to any web server
+          2. Create this link: itms-services://?action=download-manifest&url=https://yourserver.com/manifest.plist
+          3. Open the link in Safari on iPhone 11
+          4. Tap "Install" - works like TestFlight!
+          
+          🔥 OPTION 2: AltStore Wireless (After One-Time Setup)
+          If you can do ONE USB connection for setup:
+          1. Set up AltStore with one USB connection
+          2. Enable Wi-Fi sync
+          3. After that, install apps wirelessly forever!
+          4. Open AltStore app on iPhone
+          5. Add VocabWorld.ipa wirelessly
+          
+          📧 OPTION 3: Email/AirDrop Method
+          1. Email VocabWorld.ipa to yourself
+          2. Open email on iPhone 11
+          3. Tap the IPA attachment
+          4. Choose "Install" if available
+          5. May work on newer iOS versions
+          
+          🌍 OPTION 4: Cloud Storage Direct
+          1. Upload VocabWorld.ipa to iCloud Drive/Google Drive
+          2. Open Files app on iPhone 11
+          3. Navigate to the IPA file
+          4. Tap to install directly
+          5. Bypass App Store completely
+          
+          🎯 What You'll Get:
+          - Purple status bar overlay (fixes white bar on iPhone 11)
+          - Native Capacitor app (not PWA)
+          - Proper status bar control that Safari can't provide
+          
+          💡 The enterprise manifest method works best - it's how companies distribute internal apps!
+          WIRELESS
             echo "📁 File size: $(ls -lh VocabWorld.ipa | awk '{print $5}')"
             
             # Verify the file exists and has content
@@ -232,5 +311,6 @@ workflows:
       - VocabWorld.ipa
       - manifest.plist
       - Alternative_Installation.txt
+      - Wireless_Only_Install.txt
       - iPhone_Installation_Guide.txt
       - ios/App/build/Release-iphoneos/*.app
