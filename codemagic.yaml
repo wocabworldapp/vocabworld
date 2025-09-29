@@ -1,6 +1,6 @@
 workflows:
   ios-workflow:
-    name: VocabWorld iOS - Simple Unsigned Build
+    name: VocabWorld iOS - Capacitor Build
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -12,183 +12,14 @@ workflows:
         script: npm install
       - name: Install Capacitor CLI
         script: npm install -g @capacitor/cli
-      - name: Create web assets
+      - name: Build Next.js app
         script: |
-          # Create the web directory that Capacitor expects
-          mkdir -p dist
-          cat > dist/index.html << 'EOF'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-              <title>VocabWorld</title>
-              <style>
-                  body {
-                      margin: 0;
-                      padding: 20px;
-                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                      color: white;
-                      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                      min-height: 100vh;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                      align-items: center;
-                      text-align: center;
-                  }
-                  h1 { font-size: 2.5rem; margin-bottom: 1rem; }
-                  p { font-size: 1.2rem; opacity: 0.9; }
-                  .status-test { 
-                      position: fixed; 
-                      top: 0; 
-                      left: 0; 
-                      right: 0; 
-                      background: rgba(99, 102, 241, 0.9); 
-                      padding: 10px; 
-                      text-align: center;
-                      color: white;
-                      z-index: 1000;
-                  }
-              </style>
-          </head>
-          <body>
-              <div class="status-test">✅ Capacitor Status Bar Test</div>
-              <h1>📚 VocabWorld</h1>
-              <p>Status Bar Overlay Fixed!</p>
-              <p>Purple background behind status bar</p>
-              <p>No more white bar on iPhone 11</p>
-          </body>
-          </html>
-          EOF
+          # Build the Next.js app for production
+          npm run build
           
-                      # Create a simple web installer
-            cat > installer.html << 'HTML'
-          <!DOCTYPE html>
-          <html>
-          <head>
-              <meta charset="UTF-8">
-              <meta name="viewport" content="width=device-width, initial-scale=1.0">
-              <title>VocabWorld Installer</title>
-              <style>
-                  body {
-                      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                      color: white;
-                      text-align: center;
-                      padding: 20px;
-                      margin: 0;
-                      min-height: 100vh;
-                      display: flex;
-                      flex-direction: column;
-                      justify-content: center;
-                  }
-                  .installer {
-                      background: rgba(255,255,255,0.1);
-                      border-radius: 15px;
-                      padding: 30px;
-                      max-width: 400px;
-                      margin: 0 auto;
-                  }
-                  .install-btn {
-                      background: #10b981;
-                      color: white;
-                      border: none;
-                      padding: 15px 30px;
-                      border-radius: 10px;
-                      font-size: 18px;
-                      font-weight: bold;
-                      cursor: pointer;
-                      margin: 20px 0;
-                      width: 100%;
-                  }
-                  .install-btn:active {
-                      background: #059669;
-                  }
-                  h1 { margin-bottom: 10px; }
-                  p { opacity: 0.9; margin: 10px 0; }
-              </style>
-          </head>
-          <body>
-              <div class="installer">
-                  <h1>📚 VocabWorld</h1>
-                  <p>Status Bar Fix for iPhone 11</p>
-                  
-                  <button class="install-btn" onclick="installApp()">
-                      📱 Install VocabWorld
-                  </button>
-                  
-                  <p><small>This will install the native Capacitor app with purple status bar overlay</small></p>
-              </div>
-              
-              <script>
-                  function installApp() {
-                      // Try multiple installation methods
-                      
-                      // Method 1: Direct IPA link (if you put the IPA on a web server)
-                      var ipaUrl = 'https://your-server.com/VocabWorld.ipa';
-                      
-                      // Method 2: Enterprise manifest installation
-                      var manifestUrl = 'itms-services://?action=download-manifest&url=https://your-server.com/manifest.plist';
-                      
-                      // Try enterprise installation first
-                      window.location.href = manifestUrl;
-                      
-                      // Fallback instructions
-                      setTimeout(function() {
-                          alert('Instructions:\n\n1. Upload VocabWorld.ipa to a web server\n2. Update the URLs in this installer\n3. Or try: Settings > General > VPN & Device Management to trust any installed profiles');
-                      }, 3000);
-                  }
-              </script>
-          </body>
-          </html>
-          HTML
-            
-            # Create step-by-step iCloud installation guide
-            cat > iCloud_Installation.txt << 'ICLOUD'
-          📱 iCloud Files Installation Guide
-          
-          Since the IPA is in your Files app but no install button, try this:
-          
-          🔧 METHOD 1: Share from Files
-          1. Open Files app on iPhone 11
-          2. Find VocabWorld.ipa in iCloud
-          3. Long press the IPA file
-          4. Tap "Share" 
-          5. Look for "Install" or "Copy to [App Name]"
-          6. If available, tap to install
-          
-          📂 METHOD 2: Move to Different Location
-          1. In Files app, select VocabWorld.ipa
-          2. Tap "Move" or "Copy"
-          3. Move to "On My iPhone" > Downloads
-          4. Try opening from local storage instead
-          
-          🌐 METHOD 3: Create Web Installer (BEST)
-          1. Upload VocabWorld.ipa to any web hosting (GitHub, Netlify, etc.)
-          2. Upload manifest.plist to same location
-          3. Update installer.html with your URLs
-          4. Host installer.html on web
-          5. Open installer URL in Safari on iPhone
-          6. Tap "Install VocabWorld" button
-          
-          📧 METHOD 4: Email Trick
-          1. Email VocabWorld.ipa to yourself
-          2. Open email on iPhone 11
-          3. Tap the IPA attachment
-          4. May show install option from email
-          
-          💡 Why Files App Doesn't Work:
-          iOS Files app can't directly install unsigned IPAs - you need either:
-          - A web installer (enterprise manifest)
-          - Email attachment method
-          - Third-party installer app
-          
-          🎯 The web installer method works best - it creates the "Install" button you need!
-          ICLOUD
+          # Verify the build was successful
+          echo "✅ Next.js build completed"
           ls -la dist/
-      - name: Add iOS platform
-        script: npx cap add ios
       - name: Sync Capacitor
         script: npx cap sync ios
       - name: Build unsigned iOS app
@@ -216,204 +47,80 @@ workflows:
             mkdir -p $CM_BUILD_DIR/Payload
             cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
             
-            # Create a complete embedded.mobileprovision with ExpirationDate
+            # Create a complete embedded.mobileprovision
             cat > $CM_BUILD_DIR/Payload/App.app/embedded.mobileprovision << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>AppIDName</key>
-              <string>VocabWorld Development</string>
-              <key>ApplicationIdentifierPrefix</key>
-              <array><string>DEV123</string></array>
-              <key>CreationDate</key>
-              <date>2024-09-29T00:00:00Z</date>
-              <key>DeveloperCertificates</key>
-              <array><data>LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lKQU5Eb1FLM3VOMjYwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4Q3pBSkJnTlYKQkFZVEFsVlRNUXd3Q2dZRFZRUUlEQU5DUVRFUEF3MEVDVGo0Q2dZRFZRUUtEQUJWYm1sMGJGTjBZV1IxClVtVmhjMjE9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K</data></array>
-              <key>Entitlements</key>
-              <dict>
-                  <key>application-identifier</key>
-                  <string>DEV123.com.vocabworld.languagelearning</string>
-                  <key>com.apple.developer.team-identifier</key>
-                  <string>DEV123</string>
-                  <key>get-task-allow</key>
-                  <true/>
-                  <key>keychain-access-groups</key>
-                  <array><string>DEV123.*</string></array>
-              </dict>
-              <key>ExpirationDate</key>
-              <date>2025-12-31T23:59:59Z</date>
-              <key>Name</key>
-              <string>VocabWorld Development</string>
-              <key>Platform</key>
-              <array><string>iOS</string></array>
-              <key>ProvisionsAllDevices</key>
-              <true/>
-              <key>TeamIdentifier</key>
-              <array><string>DEV123</string></array>
-              <key>TeamName</key>
-              <string>VocabWorld Team</string>
-              <key>TimeToLive</key>
-              <integer>365</integer>
-              <key>UUID</key>
-              <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>
-              <key>Version</key>
-              <integer>1</integer>
-          </dict>
-          </plist>
-          EOF
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>AppIDName</key>
+    <string>VocabWorld Development</string>
+    <key>ApplicationIdentifierPrefix</key>
+    <array><string>DEV123</string></array>
+    <key>CreationDate</key>
+    <date>2024-09-29T00:00:00Z</date>
+    <key>DeveloperCertificates</key>
+    <array><data>LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lKQU5Eb1FLM3VOMjYwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4Q3pBSkJnTlYKQkFZVEFsVlRNUXd3Q2dZRFZRUUlEQU5CUVRFUEF3MEVDVGo0Q2dZRFZRUUtEQUJWYm1sMGJGTjBZV1IxClVtVmhjMjE9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K</data></array>
+    <key>Entitlements</key>
+    <dict>
+        <key>application-identifier</key>
+        <string>DEV123.com.vocabworld.languagelearning</string>
+        <key>com.apple.developer.team-identifier</key>
+        <string>DEV123</string>
+        <key>get-task-allow</key>
+        <true/>
+        <key>keychain-access-groups</key>
+        <array><string>DEV123.*</string></array>
+    </dict>
+    <key>ExpirationDate</key>
+    <date>2025-12-31T23:59:59Z</date>
+    <key>Name</key>
+    <string>VocabWorld Development</string>
+    <key>Platform</key>
+    <array><string>iOS</string></array>
+    <key>ProvisionsAllDevices</key>
+    <true/>
+    <key>TeamIdentifier</key>
+    <array><string>DEV123</string></array>
+    <key>TeamName</key>
+    <string>VocabWorld Team</string>
+    <key>TimeToLive</key>
+    <integer>365</integer>
+    <key>UUID</key>
+    <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>
+    <key>Version</key>
+    <integer>1</integer>
+</dict>
+</plist>
+EOF
             
-            # Create installation instructions
+            # Create installation guide
             cat > $CM_BUILD_DIR/iPhone_Installation_Guide.txt << 'INSTALL'
-          📱 VocabWorld Installation Guide - iPhone 11
-          
-          🚨 FIXING "Cannot verify integrity" ERROR:
-          
-          After installing from Diawi, if you see the integrity error:
-          
-          1. ⚙️  Go to Settings on your iPhone
-          2. 📋 General > VPN & Device Management  
-          3. 👨‍💻 Look for "DEVELOPER APP" section
-          4. 📱 Find "VocabWorld Development Team"
-          5. ✅ Tap "Trust VocabWorld Development Team"
-          6. ✅ Confirm "Trust" in the popup
-          7. 🚀 Now open VocabWorld - it should work!
-          
-          📱 What to Expect:
-          - Purple status bar background (no more white bar!)
-          - Capacitor status bar overlay working on iPhone 11
-          - Test page showing "Status Bar Overlay Fixed!"
-          
-          📋 Step-by-Step:
-          1. Upload VocabWorld.ipa to diawi.com
-          2. Open the Diawi link on your iPhone 11  
-          3. Tap "Install" when prompted
-          4. Trust the certificate (steps above)
-          5. Launch VocabWorld to test status bar fix
-          
-          ✨ This tests the native Capacitor solution for the white status bar issue!
-          INSTALL
+📱 VocabWorld Installation Guide - iPhone Testing
+
+🚨 INSTALL ON YOUR IPHONE:
+
+1. 📥 Download VocabWorld.ipa from Codemagic artifacts
+2. 🌐 Go to diawi.com on your computer
+3. 📱 Upload VocabWorld.ipa to Diawi
+4. 📲 Open the Diawi link on your iPhone in Safari
+5. ✅ Tap "Install" when prompted
+6. ⚙️ Go to Settings > General > VPN & Device Management
+7. 👨‍💻 Find "VocabWorld Development Team" and tap "Trust"
+8. 🚀 Open VocabWorld app to test!
+
+📱 What to Expect:
+- Native iOS app (not Safari web view)
+- Purple status bar background
+- Capacitor native functionality
+- Your Next.js VocabWorld content
+
+✨ This is a complete native iOS app built with Capacitor!
+INSTALL
             
             cd $CM_BUILD_DIR
             zip -r VocabWorld.ipa Payload/
             
-            # Create alternative installation guide 
-            cat > Alternative_Installation.txt << 'ALT'
-          📱 WIRELESS INSTALLATION METHODS (No USB Required!)
-          
-          🔥 METHOD 1: AltStore Wireless (RECOMMENDED)
-          
-          Initial Setup (One Time Only):
-          1. Download AltStore from altstore.io on your computer
-          2. Connect iPhone 11 to computer ONCE via USB for initial setup
-          3. Install AltStore app on your iPhone 11
-          4. Enable "Sync over Wi-Fi" in iTunes/Finder
-          5. Disconnect USB - you're now wireless forever!
-          
-          Installing VocabWorld (Wireless):
-          1. Download VocabWorld.ipa to your computer
-          2. Both computer and iPhone on same Wi-Fi network
-          3. Open AltStore app on iPhone 11
-          4. Tap "+" to add app
-          5. Select VocabWorld.ipa from computer wirelessly
-          6. Install - bypasses all integrity checks!
-          
-          🌐 METHOD 2: Safari Direct Install (iOS 16+)
-          If your iPhone supports it:
-          1. Upload VocabWorld.ipa to file sharing service (Google Drive, Dropbox)
-          2. Open link in Safari on iPhone 11
-          3. Tap "Install" if prompted
-          4. May work depending on iOS version
-          
-          📱 METHOD 3: Apple Configurator 2 (Wireless)
-          1. Install Apple Configurator 2 on Mac
-          2. Add iPhone via Wi-Fi pairing
-          3. Drag VocabWorld.ipa into Configurator
-          4. Install wirelessly to device
-          
-          🎯 After Installation (Any Method):
-          - Purple status bar background (fixes white bar issue!)
-          - Native Capacitor status bar overlay working
-          - No more Safari PWA limitations on iPhone 11
-          
-          ⚡ AltStore wireless is your best option - one USB setup, wireless forever!
-          ALT
-            # Create enterprise manifest for wireless installation
-            cat > manifest.plist << 'MANIFEST'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>items</key>
-              <array>
-                  <dict>
-                      <key>assets</key>
-                      <array>
-                          <dict>
-                              <key>kind</key>
-                              <string>software-package</string>
-                              <key>url</key>
-                              <string>https://github.com/wocabworldapp/vocabworld/releases/download/v1.0/VocabWorld.ipa</string>
-                          </dict>
-                      </array>
-                      <key>metadata</key>
-                      <dict>
-                          <key>bundle-identifier</key>
-                          <string>com.vocabworld.enterprise</string>
-                          <key>bundle-version</key>
-                          <string>1.0</string>
-                          <key>kind</key>
-                          <string>software</string>
-                          <key>title</key>
-                          <string>VocabWorld - Status Bar Fix</string>
-                          <key>subtitle</key>
-                          <string>Purple Status Bar for iPhone 11</string>
-                      </dict>
-                  </dict>
-              </array>
-          </dict>
-          </plist>
-          MANIFEST
-            
-            # Create wireless installation instructions
-            cat > Wireless_Only_Install.txt << 'WIRELESS'
-          📱 100% WIRELESS INSTALLATION - NO USB NEEDED!
-          
-          🌐 OPTION 1: Enterprise Manifest (Like TestFlight)
-          1. Upload VocabWorld.ipa and manifest.plist to any web server
-          2. Create this link: itms-services://?action=download-manifest&url=https://yourserver.com/manifest.plist
-          3. Open the link in Safari on iPhone 11
-          4. Tap "Install" - works like TestFlight!
-          
-          🔥 OPTION 2: AltStore Wireless (After One-Time Setup)
-          If you can do ONE USB connection for setup:
-          1. Set up AltStore with one USB connection
-          2. Enable Wi-Fi sync
-          3. After that, install apps wirelessly forever!
-          4. Open AltStore app on iPhone
-          5. Add VocabWorld.ipa wirelessly
-          
-          📧 OPTION 3: Email/AirDrop Method
-          1. Email VocabWorld.ipa to yourself
-          2. Open email on iPhone 11
-          3. Tap the IPA attachment
-          4. Choose "Install" if available
-          5. May work on newer iOS versions
-          
-          🌍 OPTION 4: Cloud Storage Direct
-          1. Upload VocabWorld.ipa to iCloud Drive/Google Drive
-          2. Open Files app on iPhone 11
-          3. Navigate to the IPA file
-          4. Tap to install directly
-          5. Bypass App Store completely
-          
-          🎯 What You'll Get:
-          - Purple status bar overlay (fixes white bar on iPhone 11)
-          - Native Capacitor app (not PWA)
-          - Proper status bar control that Safari can't provide
-          
-          💡 The enterprise manifest method works best - it's how companies distribute internal apps!
-          WIRELESS
             echo "📁 File size: $(ls -lh VocabWorld.ipa | awk '{print $5}')"
             
             # Verify the file exists and has content
@@ -432,10 +139,5 @@ workflows:
           fi
     artifacts:
       - VocabWorld.ipa
-      - manifest.plist
-      - installer.html
-      - iCloud_Installation.txt
-      - Alternative_Installation.txt
-      - Wireless_Only_Install.txt
       - iPhone_Installation_Guide.txt
       - ios/App/build/Release-iphoneos/*.app
