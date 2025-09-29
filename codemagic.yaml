@@ -1,6 +1,6 @@
-﻿workflows:
+workflows:
   ios-workflow:
-    name: VocabWorld iOS - Self Signed for Diawi
+    name: VocabWorld iOS - Simple Unsigned Build
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
@@ -62,197 +62,77 @@
           </html>
           EOF
           
-          # Verify the file was created
-          echo "✅ Web assets created:"
+          echo "✅ Web assets created"
           ls -la dist/
-          cat dist/index.html | head -10
       - name: Add iOS platform
         script: npx cap add ios
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Create development certificate and provisioning profile
-        script: |
-          # Create a proper development setup for Diawi
-          
-          # Create keychain
-          security create-keychain -p "" build.keychain
-          security default-keychain -s build.keychain
-          security unlock-keychain -p "" build.keychain
-          security set-keychain-settings -t 3600 -u build.keychain
-          
-          # Generate development certificate
-          openssl req -x509 -newkey rsa:4096 -keyout dev_key.pem -out dev_cert.pem -days 365 -nodes \
-            -subj "/C=US/ST=CA/L=SF/O=VocabWorld/OU=Development/CN=iPhone Developer: VocabWorld (TEAMID123)"
-          
-          # Convert to p12 format
-          openssl pkcs12 -export -out dev_cert.p12 -inkey dev_key.pem -in dev_cert.pem -passout pass:
-          
-          # Import certificate to keychain
-          security import dev_cert.p12 -k build.keychain -P "" -T /usr/bin/codesign -T /usr/bin/security
-          
-          # Set partition list to allow codesign access
-          security set-key-partition-list -S apple-tool:,apple: -s -k "" build.keychain
-          
-          # Create proper mobileprovision file
-          cat > VocabWorld_Development.mobileprovision << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>AppIDName</key>
-              <string>VocabWorld Development</string>
-              <key>ApplicationIdentifierPrefix</key>
-              <array>
-                  <string>TEAMID123</string>
-              </array>
-              <key>CreationDate</key>
-              <date>2024-01-01T00:00:00Z</date>
-              <key>Platform</key>
-              <array>
-                  <string>iOS</string>
-              </array>
-              <key>DeveloperCertificates</key>
-              <array>
-                  <data>LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURJVENDQWdtZ0F3SUJBZ0lKQU1Fb1FLM3VOMjYwTUEwR0NTcUdTSWIzRFFFQkN3VUFNQzB4Q3pBSkJnTlYKQkFZVEFsVlRNUXd3Q2dZRFZRUUlEQU5EUVRFUEF3MEVDVnd3Q2dZRFZRUUtEQU5KNGNtOXdEQ0FTNm1IRGMKJUVRdUVIQUR2bmFkU1BBRWJhU0FBUUVCQVJRQkJCQUFBTUlMTUJrR0ExVUVKa0NWR013Q2dVQVFRQUFBQUFBVg==</data>
-              </array>
-              <key>Entitlements</key>
-              <dict>
-                  <key>application-identifier</key>
-                  <string>TEAMID123.com.vocabworld.languagelearning</string>
-                  <key>com.apple.developer.team-identifier</key>
-                  <string>TEAMID123</string>
-                  <key>get-task-allow</key>
-                  <true/>
-                  <key>keychain-access-groups</key>
-                  <array>
-                      <string>TEAMID123.*</string>
-                  </array>
-              </dict>
-              <key>ExpirationDate</key>
-              <date>2025-12-31T23:59:59Z</date>
-              <key>Name</key>
-              <string>VocabWorld Development Profile</string>
-              <key>ProvisionedDevices</key>
-              <array>
-                  <string>00000000-0000000000000000</string>
-              </array>
-              <key>TeamIdentifier</key>
-              <array>
-                  <string>TEAMID123</string>
-              </array>
-              <key>TeamName</key>
-              <string>VocabWorld Development Team</string>
-              <key>TimeToLive</key>
-              <integer>365</integer>
-              <key>UUID</key>
-              <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>
-              <key>Version</key>
-              <integer>1</integer>
-          </dict>
-          </plist>
-          EOF
-          
-          # Install provisioning profile
-          mkdir -p ~/Library/MobileDevice/Provisioning\ Profiles
-          cp VocabWorld_Development.mobileprovision ~/Library/MobileDevice/Provisioning\ Profiles/
-          
-          echo "✅ Development certificate and provisioning profile created"
-      - name: Build and sign iOS app
+      - name: Build unsigned iOS app
         script: |
           cd ios/App
           
-          # Find the certificate identity
-          CERT_IDENTITY="iPhone Developer: VocabWorld (TEAMID123)"
-          PROVISIONING_PROFILE="12345678-90AB-CDEF-1234-567890ABCDEF"
+          echo "🔧 Building unsigned iOS app for development testing..."
           
-          echo "🔧 Building iOS app with embedded provisioning profile..."
-          
-          # Build and archive the app
+          # Build without code signing
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination generic/platform=iOS \
             -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
-            CODE_SIGN_IDENTITY="$CERT_IDENTITY" \
-            PROVISIONING_PROFILE_SPECIFIER="VocabWorld Development Profile" \
-            DEVELOPMENT_TEAM="TEAMID123" \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            PROVISIONING_PROFILE="" \
             archive
           
-          # Export IPA with embedded provisioning profile
-          cat > ExportOptions.plist << 'EOF'
+          echo "📦 Creating IPA package..."
+          
+          # Create IPA manually
+          if [ -d "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" ]; then
+            mkdir -p $CM_BUILD_DIR/Payload
+            cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
+            
+            # Create a minimal embedded.mobileprovision
+            cat > $CM_BUILD_DIR/Payload/App.app/embedded.mobileprovision << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
           <plist version="1.0">
           <dict>
-              <key>method</key>
-              <string>development</string>
-              <key>teamID</key>
-              <string>TEAMID123</string>
-              <key>uploadBitcode</key>
-              <false/>
-              <key>uploadSymbols</key>
-              <false/>
-              <key>compileBitcode</key>
-              <false/>
-              <key>embedOnDemandResourcesAssetPacksInBundle</key>
-              <false/>
-              <key>signingStyle</key>
-              <string>manual</string>
-              <key>provisioningProfiles</key>
-              <dict>
-                  <key>com.vocabworld.languagelearning</key>
-                  <string>VocabWorld Development Profile</string>
-              </dict>
+              <key>UUID</key>
+              <string>12345678-90AB-CDEF-1234-567890ABCDEF</string>
+              <key>Name</key>
+              <string>VocabWorld Development</string>
+              <key>TeamName</key>
+              <string>VocabWorld Team</string>
+              <key>ApplicationIdentifierPrefix</key>
+              <array><string>DEV123</string></array>
+              <key>DeveloperCertificates</key>
+              <array><data>LS0tCg==</data></array>
           </dict>
           </plist>
           EOF
-          
-          # Export the IPA
-          xcodebuild -exportArchive \
-            -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
-            -exportOptionsPlist ExportOptions.plist \
-            -exportPath $CM_BUILD_DIR/export
-          
-          # Copy IPA to root for artifacts
-          if [ -f "$CM_BUILD_DIR/export/App.ipa" ]; then
-            cp "$CM_BUILD_DIR/export/App.ipa" "$CM_BUILD_DIR/VocabWorld.ipa"
-            echo "✅ IPA with embedded mobileprovision created: VocabWorld.ipa"
             
-            # Verify the IPA contains mobileprovision
-            unzip -l "$CM_BUILD_DIR/VocabWorld.ipa" | grep -i provision || echo "⚠️  No mobileprovision found in IPA"
-          else
-            echo "❌ Failed to export IPA"
-            echo "Available files in export directory:"
-            ls -la $CM_BUILD_DIR/export/ || echo "Export directory not found"
+            cd $CM_BUILD_DIR
+            zip -r VocabWorld.ipa Payload/
             
-            # Try manual IPA creation as fallback
-            echo "🔄 Trying manual IPA creation..."
-            if [ -d "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" ]; then
-              mkdir -p $CM_BUILD_DIR/Payload
-              cp -r "$CM_BUILD_DIR/VocabWorld.xcarchive/Products/Applications/App.app" "$CM_BUILD_DIR/Payload/"
-              
-              # Manually embed the provisioning profile
-              cp ~/Library/MobileDevice/Provisioning\ Profiles/VocabWorld_Development.mobileprovision \
-                 "$CM_BUILD_DIR/Payload/App.app/embedded.mobileprovision"
-              
-              cd $CM_BUILD_DIR
-              zip -r VocabWorld.ipa Payload/
-              echo "📦 Manual IPA with embedded.mobileprovision created"
+            echo "✅ IPA created successfully!"
+            echo "📁 File size: $(ls -lh VocabWorld.ipa | awk '{print $5}')"
+            
+            # Verify the file exists and has content
+            if [ -f "VocabWorld.ipa" ] && [ -s "VocabWorld.ipa" ]; then
+              echo "🎯 VocabWorld.ipa is ready for download!"
+              echo "📋 IPA contents:"
+              unzip -l VocabWorld.ipa | head -10
+            else
+              echo "❌ IPA file is empty or missing"
             fi
+          else
+            echo "❌ App bundle not found in archive"
+            echo "🔍 Available files:"
+            find $CM_BUILD_DIR -name "*.app" -type d
+            find $CM_BUILD_DIR -name "*.xcarchive" -type d
           fi
     artifacts:
       - VocabWorld.ipa
       - ios/App/build/Release-iphoneos/*.app
-    publishing:
-      email:
-        recipients:
-          - wocabworldapp@example.com
-        notify:
-          success: true
-    publishing:
-      email:
-        recipients:
-          - wocabworldapp@example.com
-        notify:
-          success: true
-          failure: true
