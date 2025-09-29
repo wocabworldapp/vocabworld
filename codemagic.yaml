@@ -22,18 +22,42 @@ workflows:
           ls -la dist/
       - name: Sync Capacitor
         script: npx cap sync ios
-      - name: Build signed iOS app (Alternative)
+      - name: Configure iOS project for unsigned build
         script: |
           cd ios/App
           
-          echo "🔧 Trying alternative build with better certificate embedding..."
+          echo "🔧 Configuring iOS project for unsigned development build..."
           
-          # Try building with proper entitlements
+          # Modify the Xcode project to allow unsigned builds
+          # Set code signing to manual and remove team requirement
+          plutil -replace "objects.13B07F861A680F5B00A75B9A.buildSettings.CODE_SIGN_IDENTITY[sdk=iphoneos*]" -string "" App.xcodeproj/project.pbxproj 2>/dev/null || true
+          plutil -replace "objects.13B07F861A680F5B00A75B9A.buildSettings.DEVELOPMENT_TEAM" -string "" App.xcodeproj/project.pbxproj 2>/dev/null || true
+          
+          # Alternative approach using sed
+          sed -i '' 's/DEVELOPMENT_TEAM = .*$/DEVELOPMENT_TEAM = "";/g' App.xcodeproj/project.pbxproj || true
+          sed -i '' 's/CODE_SIGN_IDENTITY = .*$/CODE_SIGN_IDENTITY = "";/g' App.xcodeproj/project.pbxproj || true
+          sed -i '' 's/CODE_SIGN_STYLE = .*$/CODE_SIGN_STYLE = Manual;/g' App.xcodeproj/project.pbxproj || true
+          
+          echo "✅ Project configured for unsigned builds"
+          
+      - name: Build unsigned iOS app
+        script: |
+          cd ios/App
+          
+          echo "🔧 Building unsigned iOS app for development testing..."
+          
+          # Build without code signing
           xcodebuild -workspace App.xcworkspace \
             -scheme App \
             -configuration Release \
             -destination generic/platform=iOS \
             -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE="" \
+            -allowProvisioningUpdates \
             archive
           
           echo "📦 Creating IPA with proper certificate..."
