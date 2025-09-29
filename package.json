@@ -1,17 +1,31 @@
-﻿{
+{
   "name": "vocabworld-ios",
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "echo 'Build complete'"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "export": "next build && next export",
+    "capacitor:build": "npm run build && npx cap copy && npx cap sync",
+    "capacitor:ios": "npm run capacitor:build && npx cap open ios",
+    "capacitor:add:ios": "npx cap add ios",
+    "capacitor:sync": "npx cap sync",
+    "capacitor:copy": "npx cap copy"
   },
   "dependencies": {
     "@capacitor/cli": "^6.2.0",
     "@capacitor/core": "^6.2.0",
     "@capacitor/ios": "^6.2.0",
-    "@capacitor/status-bar": "^6.0.1"
+    "@capacitor/status-bar": "^6.0.1",
+    "next": "^14.0.0",
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.0.0",
+    "@types/react-dom": "^18.0.0"
   }
 }
