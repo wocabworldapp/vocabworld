@@ -113,9 +113,18 @@ workflows:
           3. 📱 Upload VocabWorld.ipa to Diawi
           4. 📲 Open the Diawi link on your iPhone in Safari
           5. ✅ Tap "Install" when prompted
+
+          🔐 IF YOU GET "INTEGRITY CANNOT BE IDENTIFIED" ERROR:
           6. ⚙️ Go to Settings > General > VPN & Device Management
-          7. 👨‍💻 Find "VocabWorld Development Team" and tap "Trust"
-          8. 🚀 Open VocabWorld app to test!
+          7. 👨‍💻 Look for "VocabWorld Development Team" or "DEV123"
+          8. ✅ Tap on it and select "Trust VocabWorld Development Team"
+          9. ✅ Confirm "Trust" in the popup dialog
+          10. 🚀 Now go back to home screen and open VocabWorld app!
+
+          📱 Alternative Installation Methods:
+          - AltStore: If you have AltStore set up (bypasses trust issues)
+          - TestFlight: If you have Apple Developer account
+          - Xcode: Direct installation via cable if you have a Mac
 
           📱 What to Expect:
           - Native iOS app (not Safari web view)
