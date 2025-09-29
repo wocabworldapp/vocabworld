@@ -62,7 +62,130 @@ workflows:
           </html>
           EOF
           
-          echo "✅ Web assets created"
+                      # Create a simple web installer
+            cat > installer.html << 'HTML'
+          <!DOCTYPE html>
+          <html>
+          <head>
+              <meta charset="UTF-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <title>VocabWorld Installer</title>
+              <style>
+                  body {
+                      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                      color: white;
+                      text-align: center;
+                      padding: 20px;
+                      margin: 0;
+                      min-height: 100vh;
+                      display: flex;
+                      flex-direction: column;
+                      justify-content: center;
+                  }
+                  .installer {
+                      background: rgba(255,255,255,0.1);
+                      border-radius: 15px;
+                      padding: 30px;
+                      max-width: 400px;
+                      margin: 0 auto;
+                  }
+                  .install-btn {
+                      background: #10b981;
+                      color: white;
+                      border: none;
+                      padding: 15px 30px;
+                      border-radius: 10px;
+                      font-size: 18px;
+                      font-weight: bold;
+                      cursor: pointer;
+                      margin: 20px 0;
+                      width: 100%;
+                  }
+                  .install-btn:active {
+                      background: #059669;
+                  }
+                  h1 { margin-bottom: 10px; }
+                  p { opacity: 0.9; margin: 10px 0; }
+              </style>
+          </head>
+          <body>
+              <div class="installer">
+                  <h1>📚 VocabWorld</h1>
+                  <p>Status Bar Fix for iPhone 11</p>
+                  
+                  <button class="install-btn" onclick="installApp()">
+                      📱 Install VocabWorld
+                  </button>
+                  
+                  <p><small>This will install the native Capacitor app with purple status bar overlay</small></p>
+              </div>
+              
+              <script>
+                  function installApp() {
+                      // Try multiple installation methods
+                      
+                      // Method 1: Direct IPA link (if you put the IPA on a web server)
+                      var ipaUrl = 'https://your-server.com/VocabWorld.ipa';
+                      
+                      // Method 2: Enterprise manifest installation
+                      var manifestUrl = 'itms-services://?action=download-manifest&url=https://your-server.com/manifest.plist';
+                      
+                      // Try enterprise installation first
+                      window.location.href = manifestUrl;
+                      
+                      // Fallback instructions
+                      setTimeout(function() {
+                          alert('Instructions:\n\n1. Upload VocabWorld.ipa to a web server\n2. Update the URLs in this installer\n3. Or try: Settings > General > VPN & Device Management to trust any installed profiles');
+                      }, 3000);
+                  }
+              </script>
+          </body>
+          </html>
+          HTML
+            
+            # Create step-by-step iCloud installation guide
+            cat > iCloud_Installation.txt << 'ICLOUD'
+          📱 iCloud Files Installation Guide
+          
+          Since the IPA is in your Files app but no install button, try this:
+          
+          🔧 METHOD 1: Share from Files
+          1. Open Files app on iPhone 11
+          2. Find VocabWorld.ipa in iCloud
+          3. Long press the IPA file
+          4. Tap "Share" 
+          5. Look for "Install" or "Copy to [App Name]"
+          6. If available, tap to install
+          
+          📂 METHOD 2: Move to Different Location
+          1. In Files app, select VocabWorld.ipa
+          2. Tap "Move" or "Copy"
+          3. Move to "On My iPhone" > Downloads
+          4. Try opening from local storage instead
+          
+          🌐 METHOD 3: Create Web Installer (BEST)
+          1. Upload VocabWorld.ipa to any web hosting (GitHub, Netlify, etc.)
+          2. Upload manifest.plist to same location
+          3. Update installer.html with your URLs
+          4. Host installer.html on web
+          5. Open installer URL in Safari on iPhone
+          6. Tap "Install VocabWorld" button
+          
+          📧 METHOD 4: Email Trick
+          1. Email VocabWorld.ipa to yourself
+          2. Open email on iPhone 11
+          3. Tap the IPA attachment
+          4. May show install option from email
+          
+          💡 Why Files App Doesn't Work:
+          iOS Files app can't directly install unsigned IPAs - you need either:
+          - A web installer (enterprise manifest)
+          - Email attachment method
+          - Third-party installer app
+          
+          🎯 The web installer method works best - it creates the "Install" button you need!
+          ICLOUD
           ls -la dist/
       - name: Add iOS platform
         script: npx cap add ios
@@ -310,6 +433,8 @@ workflows:
     artifacts:
       - VocabWorld.ipa
       - manifest.plist
+      - installer.html
+      - iCloud_Installation.txt
       - Alternative_Installation.txt
       - Wireless_Only_Install.txt
       - iPhone_Installation_Guide.txt
