@@ -1,209 +1,147 @@
 ﻿workflows:
   ios-workflow:
-    name: VocabWorld PWA Build
+    name: Capacitor iOS - Status Bar Fix
     max_build_duration: 120
     instance_type: mac_mini_m1
     environment:
       node: 18
+      xcode: latest
+      cocoapods: default
     scripts:
-      - name: Create VocabWorld PWA
+      - name: Install dependencies
+        script: npm install
+      - name: Install Capacitor CLI
+        script: npm install -g @capacitor/cli
+      - name: Add iOS platform
+        script: npx cap add ios
+      - name: Sync Capacitor
+        script: npx cap sync ios
+      - name: Create minimal web content
         script: |
-          # Create a complete PWA that works on iPhone 11
           mkdir -p dist
-          
-          # Create main HTML with iPhone 11 status bar fixes
           cat > dist/index.html << 'EOF'
           <!DOCTYPE html>
-          <html lang="en">
+          <html>
           <head>
               <meta charset="UTF-8">
               <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
               <title>VocabWorld</title>
-              
-              <!-- Status bar and PWA meta tags -->
-              <meta name="apple-mobile-web-app-capable" content="yes">
-              <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-              <meta name="apple-mobile-web-app-title" content="VocabWorld">
-              <meta name="theme-color" content="#6366f1">
-              
-              <!-- PWA manifest -->
-              <link rel="manifest" href="manifest.json">
-              <link rel="apple-touch-icon" href="icon-192.png">
-              
               <style>
-                  * { margin: 0; padding: 0; box-sizing: border-box; }
-                  
                   body {
-                      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
-                      min-height: 100vh;
-                      color: white;
-                      
-                      /* iPhone 11 status bar fix */
-                      padding-top: env(safe-area-inset-top);
-                      padding-bottom: env(safe-area-inset-bottom);
-                      padding-left: env(safe-area-inset-left);
-                      padding-right: env(safe-area-inset-right);
-                  }
-                  
-                  .app-container {
+                      margin: 0;
                       padding: 20px;
-                      text-align: center;
+                      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+                      color: white;
+                      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
                       min-height: 100vh;
                       display: flex;
                       flex-direction: column;
                       justify-content: center;
                       align-items: center;
+                      text-align: center;
                   }
-                  
-                  .logo {
-                      font-size: 3rem;
-                      margin-bottom: 1rem;
-                      text-shadow: 0 2px 4px rgba(0,0,0,0.3);
-                  }
-                  
-                  .title {
-                      font-size: 2.5rem;
-                      font-weight: bold;
-                      margin-bottom: 1rem;
-                  }
-                  
-                  .subtitle {
-                      font-size: 1.2rem;
-                      opacity: 0.9;
-                      margin-bottom: 2rem;
-                  }
-                  
-                  .status-bar-test {
-                      position: fixed;
-                      top: 0;
-                      left: 0;
-                      right: 0;
-                      background: rgba(99, 102, 241, 0.9);
-                      backdrop-filter: blur(10px);
-                      padding: env(safe-area-inset-top) 20px 10px 20px;
+                  h1 { font-size: 2.5rem; margin-bottom: 1rem; }
+                  p { font-size: 1.2rem; opacity: 0.9; }
+                  .status-test { 
+                      position: fixed; 
+                      top: 0; 
+                      left: 0; 
+                      right: 0; 
+                      background: rgba(99, 102, 241, 0.9); 
+                      padding: 10px; 
+                      text-align: center;
                       color: white;
-                      font-size: 0.9rem;
                       z-index: 1000;
-                  }
-                  
-                  .install-prompt {
-                      background: rgba(255,255,255,0.2);
-                      border: 2px solid rgba(255,255,255,0.3);
-                      border-radius: 12px;
-                      padding: 1rem 2rem;
-                      margin: 1rem 0;
-                      backdrop-filter: blur(10px);
-                  }
-                  
-                  @media (max-width: 414px) {
-                      /* iPhone 11 specific optimizations */
-                      .app-container { padding: 10px; }
-                      .title { font-size: 2rem; }
-                      .logo { font-size: 2.5rem; }
                   }
               </style>
           </head>
           <body>
-              <div class="status-bar-test">
-                  ✅ Status Bar Overlay Test - VocabWorld
-              </div>
-              
-              <div class="app-container">
-                  <div class="logo">📚</div>
-                  <h1 class="title">VocabWorld</h1>
-                  <p class="subtitle">AI-Powered Vocabulary Learning</p>
-                  
-                  <div class="install-prompt">
-                      <p><strong>iPhone 11 Status Bar Test</strong></p>
-                      <p>This app tests the status bar overlay fix!</p>
-                      <p>Tap Share → Add to Home Screen to install</p>
-                  </div>
-                  
-                  <div style="margin-top: 2rem; opacity: 0.8;">
-                      <p>✅ No white status bar</p>
-                      <p>✅ Purple background extends behind status bar</p>
-                      <p>✅ Content properly positioned</p>
-                      <p>✅ iPhone 11 optimized</p>
-                  </div>
-              </div>
-              
-              <script>
-                  // Service worker registration
-                  if ('serviceWorker' in navigator) {
-                      navigator.serviceWorker.register('sw.js');
-                  }
-                  
-                  // PWA install prompt
-                  window.addEventListener('beforeinstallprompt', (e) => {
-                      console.log('PWA install prompt available');
-                  });
-              </script>
+              <div class="status-test">✅ Capacitor Status Bar Test</div>
+              <h1>📚 VocabWorld</h1>
+              <p>Status Bar Overlay Fixed!</p>
+              <p>Purple background behind status bar</p>
+              <p>No more white bar on iPhone 11</p>
           </body>
           </html>
           EOF
-          
-          # Create PWA manifest
-          cat > dist/manifest.json << 'EOF'
-          {
-              "name": "VocabWorld - Vocabulary Learning",
-              "short_name": "VocabWorld", 
-              "description": "AI-powered vocabulary learning app with status bar fixes",
-              "start_url": "/",
-              "display": "fullscreen",
-              "background_color": "#6366f1",
-              "theme_color": "#6366f1",
-              "orientation": "portrait",
-              "icons": [
-                  {
-                      "src": "icon-192.png",
-                      "sizes": "192x192",
-                      "type": "image/png"
-                  },
-                  {
-                      "src": "icon-512.png", 
-                      "sizes": "512x512",
-                      "type": "image/png"
-                  }
-              ]
-          }
-          EOF
-          
-          # Create service worker
-          cat > dist/sw.js << 'EOF'
-          const CACHE_NAME = 'vocabworld-v1';
-          const urlsToCache = [
-              '/',
-              '/index.html',
-              '/manifest.json'
-          ];
-          
-          self.addEventListener('install', (event) => {
-              event.waitUntil(
-                  caches.open(CACHE_NAME)
-                      .then((cache) => cache.addAll(urlsToCache))
-              );
-          });
-          
-          self.addEventListener('fetch', (event) => {
-              event.respondWith(
-                  caches.match(event.request)
-                      .then((response) => response || fetch(event.request))
-              );
-          });
-          EOF
-          
-          # Create app icons (simple colored squares for now)
-          echo "Creating app icons..."
-      - name: Create PWA Package
+          npx cap sync ios
+      - name: Configure iOS for development signing
         script: |
-          # Create a complete PWA package
-          echo "VocabWorld PWA created successfully!"
-          echo "Files ready for download:"
-          ls -la dist/
-          echo "To install: Upload these files to any web host and visit the URL on your iPhone 11"
+          # Use development signing with automatic provisioning
+          cd ios/App
+          
+          # Update project settings for development
+          sed -i '' 's/CODE_SIGN_STYLE = Manual;/CODE_SIGN_STYLE = Automatic;/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/PROVISIONING_PROFILE_SPECIFIER = .*;/PROVISIONING_PROFILE_SPECIFIER = "";/g' App.xcodeproj/project.pbxproj
+          sed -i '' 's/DEVELOPMENT_TEAM = .*;/DEVELOPMENT_TEAM = "";/g' App.xcodeproj/project.pbxproj
+          
+          # Add automatic signing capability
+          echo "Setting up automatic development signing..."
+      - name: Build iOS Development
+        script: |
+          cd ios/App
+          
+          # Build for development with automatic signing
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -destination generic/platform=iOS \
+            -allowProvisioningUpdates \
+            -allowProvisioningDeviceRegistration \
+            CODE_SIGN_IDENTITY="iPhone Developer" \
+            DEVELOPMENT_TEAM="" \
+            build \
+            | tee $CM_BUILD_DIR/build.log
+            
+          # Create development archive
+          xcodebuild -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphoneos \
+            -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
+            -allowProvisioningUpdates \
+            CODE_SIGN_IDENTITY="iPhone Developer" \
+            DEVELOPMENT_TEAM="" \
+            archive \
+            | tee $CM_BUILD_DIR/archive.log
+      - name: Export development IPA
+        script: |
+          # Create export options for development
+          cat > $CM_BUILD_DIR/ExportOptions.plist << 'EOF'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>method</key>
+              <string>development</string>
+              <key>signingStyle</key>
+              <string>automatic</string>
+              <key>stripSwiftSymbols</key>
+              <true/>
+              <key>thinning</key>
+              <string>&lt;none&gt;</string>
+          </dict>
+          </plist>
+          EOF
+          
+          # Export IPA
+          xcodebuild -exportArchive \
+            -archivePath $CM_BUILD_DIR/VocabWorld.xcarchive \
+            -exportPath $CM_BUILD_DIR/export \
+            -exportOptionsPlist $CM_BUILD_DIR/ExportOptions.plist \
+            -allowProvisioningUpdates \
+            | tee $CM_BUILD_DIR/export.log
+            
+          # Check what was created
+          echo "=== Build Results ==="
+          ls -la $CM_BUILD_DIR/export/ || echo "No export folder"
+          ls -la $CM_BUILD_DIR/VocabWorld.xcarchive/ || echo "No archive"
+          echo "=== End Results ==="
     artifacts:
-      - dist/**/*
+      - $CM_BUILD_DIR/export/*.ipa
+      - $CM_BUILD_DIR/VocabWorld.xcarchive
+      - $CM_BUILD_DIR/*.log
     publishing:
       email:
         recipients:
